@@ -108,7 +108,20 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
         pr = 200 / cardRef.current.offsetWidth;
       }
 
-      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: pr });
+      const captureWidth = cardRef.current.scrollWidth;
+      const captureHeight = cardRef.current.scrollHeight;
+
+      const dataUrl = await toPng(cardRef.current, { 
+        cacheBust: true, 
+        pixelRatio: pr,
+        width: captureWidth,
+        height: captureHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          margin: '0'
+        }
+      });
       const link = document.createElement('a');
       link.download = activeTab === 'template' ? `${qrSlug}-instagram-card.png` : `${qrSlug}-qr.png`;
       link.href = dataUrl;
@@ -125,7 +138,20 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
     if (exportQuality === '1') pr = 1;
     else if (exportQuality === 'small') pr = 0.5;
 
-    const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: pr });
+    const captureWidth = cardRef.current.scrollWidth;
+    const captureHeight = cardRef.current.scrollHeight;
+
+    const dataUrl = await toPng(cardRef.current, { 
+      cacheBust: true, 
+      pixelRatio: pr,
+      width: captureWidth,
+      height: captureHeight,
+      style: {
+        transform: 'scale(1)',
+        transformOrigin: 'top left',
+        margin: '0'
+      }
+    });
     
     // Letter: 8.5 x 11 in (215.9 x 279.4 mm)
     // Half Letter: 5.5 x 8.5 in (139.7 x 215.9 mm)
@@ -227,48 +253,50 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
             {currentIndex + 1} / {total}
           </div>
 
-          {activeTab === 'template' ? (
-            // Instagram Card Template
-            <div 
-              ref={cardRef}
-              className="relative rounded-[2rem] shadow-2xl flex flex-col items-center p-6 sm:p-8 w-[280px] sm:w-[320px] bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] overflow-hidden mt-4 sm:mt-0 mx-auto shrink-0"
-              style={{
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(253, 29, 29, 0.3)'
-              }}
-            >
-              <div className="mb-4 sm:mb-6 mt-2 sm:mt-4">
-                <img src="/instagram-logo.svg" alt="Instagram" className="w-16 h-16 sm:w-20 sm:h-20 text-white" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))' }} />
-              </div>
-              <h2 
-                className="text-white text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 tracking-wide drop-shadow-md"
-                style={{ fontFamily: 'var(--font-geist-sans)' }} // En un proyecto real usaríamos una fuente tipo billabong
+          <div className="flex justify-center items-center transform scale-[0.85] sm:scale-100 origin-center w-full">
+            {activeTab === 'template' ? (
+              // Instagram Card Template
+              <div 
+                ref={cardRef}
+                className="relative rounded-[2rem] shadow-2xl flex flex-col items-center p-6 sm:p-8 w-[280px] sm:w-[320px] bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] overflow-hidden mt-4 sm:mt-0 mx-auto shrink-0"
+                style={{
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(253, 29, 29, 0.3)'
+                }}
               >
-                Instagram
-              </h2>
-              
-              {/* THE QR CONTAINER */}
-              <div className="bg-white p-2 sm:p-2.5 rounded-2xl shadow-xl mb-6 sm:mb-8 relative z-10 flex flex-col items-center w-max shrink-0">
-                <div ref={qrRef} className="w-[220px] h-[220px] sm:w-[250px] sm:h-[250px] shrink-0 rounded-xl overflow-hidden [&>svg]:w-full [&>svg]:h-full" />
-              </div>
-
-              <p className="text-white text-xl sm:text-2xl font-bold tracking-[0.2em] mb-2 sm:mb-4 drop-shadow-md">
-                FOLLOW US
-              </p>
-            </div>
-          ) : (
-            // Standalone QR
-            <div ref={cardRef} className={`bg-white flex flex-col items-center justify-center shrink-0 mt-4 sm:mt-0 ${qrText ? 'p-3 sm:p-4 pb-2 sm:pb-3 rounded-lg' : 'p-1.5 sm:p-2 rounded-sm'}`}>
-              <div ref={qrRef} className="w-[250px] h-[250px] shrink-0 [&>svg]:w-full [&>svg]:h-full flex items-center justify-center" />
-              {qrText && (
-                <p 
-                  className="mt-1 text-black font-bold text-xl sm:text-[28px] tracking-wide uppercase text-center" 
-                  style={{ fontFamily: 'sans-serif', lineHeight: '1' }}
+                <div className="mb-4 sm:mb-6 mt-2 sm:mt-4">
+                  <img src="/instagram-logo.svg" alt="Instagram" className="w-16 h-16 sm:w-20 sm:h-20 text-white" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))' }} />
+                </div>
+                <h2 
+                  className="text-white text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 tracking-wide drop-shadow-md"
+                  style={{ fontFamily: 'var(--font-geist-sans)' }} // En un proyecto real usaríamos una fuente tipo billabong
                 >
-                  {qrText}
+                  Instagram
+                </h2>
+                
+                {/* THE QR CONTAINER */}
+                <div className="bg-white p-2 sm:p-2.5 rounded-2xl shadow-xl mb-6 sm:mb-8 relative z-10 flex flex-col items-center w-max shrink-0">
+                  <div ref={qrRef} className="w-[220px] h-[220px] sm:w-[250px] sm:h-[250px] shrink-0 rounded-xl overflow-hidden [&>svg]:w-full [&>svg]:h-full" />
+                </div>
+
+                <p className="text-white text-xl sm:text-2xl font-bold tracking-[0.2em] mb-2 sm:mb-4 drop-shadow-md">
+                  FOLLOW US
                 </p>
-              )}
-            </div>
-          )}
+              </div>
+            ) : (
+              // Standalone QR
+              <div ref={cardRef} className={`bg-white flex flex-col items-center justify-center shrink-0 mt-4 sm:mt-0 ${qrText ? 'p-3 sm:p-4 pb-2 sm:pb-3 rounded-lg' : 'p-1.5 sm:p-2 rounded-sm'}`}>
+                <div ref={qrRef} className="w-[250px] h-[250px] shrink-0 [&>svg]:w-full [&>svg]:h-full flex items-center justify-center" />
+                {qrText && (
+                  <p 
+                    className="mt-1 text-black font-bold text-xl sm:text-[28px] tracking-wide uppercase text-center" 
+                    style={{ fontFamily: 'sans-serif', lineHeight: '1' }}
+                  >
+                    {qrText}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Controls Area */}
