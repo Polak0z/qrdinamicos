@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { QRCodeSVG } from 'qrcode.react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Link2, Trash2, Edit2, Download, QrCode, TrendingUp, Users } from 'lucide-react';
+import QrStudio from '@/components/QrStudio';
 
 export default function Dashboard() {
   const [clients, setClients] = useState([]);
@@ -113,26 +113,7 @@ export default function Dashboard() {
     }
   };
 
-  const downloadQR = () => {
-    const svg = document.getElementById("qr-code-svg");
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-      const pngFile = canvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `QR_${selectedQr.slug}.png`;
-      downloadLink.href = `${pngFile}`;
-      downloadLink.click();
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
-  };
+  // downloadQR is now handled inside QrStudio
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tudominio.com';
 
@@ -397,51 +378,19 @@ export default function Dashboard() {
 
           {/* Right Column: Visual QR Generator */}
           <div className="lg:col-span-1">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sticky top-24">
-              <h3 className="text-base font-semibold text-white mb-6">Generador de Código QR</h3>
-              
-              {selectedQr ? (
-                <div className="flex flex-col items-center">
-                  <div className="bg-white p-6 rounded-2xl shadow-xl mb-6 relative group">
-                    <QRCodeSVG
-                      id="qr-code-svg"
-                      value={`${baseUrl}/r/${selectedQr.slug}`}
-                      size={200}
-                      level={"H"}
-                      includeMargin={false}
-                      fgColor={"#000000"}
-                      bgColor={"#ffffff"}
-                    />
-                    <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-2xl pointer-events-none" />
-                  </div>
-                  
-                  <div className="text-center mb-6 w-full">
-                    <h4 className="text-white font-medium text-lg">{selectedQr.clients?.name}</h4>
-                    <p className="text-slate-400 text-sm">{selectedQr.name}</p>
-                    
-                    <div className="mt-4 p-3 bg-black/20 rounded-xl border border-white/5 flex items-center justify-between gap-3">
-                      <span className="text-xs text-slate-400 truncate text-left">{`${baseUrl}/r/${selectedQr.slug}`}</span>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={downloadQR}
-                    className="w-full flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-100 font-semibold py-3 px-4 rounded-xl transition-all"
-                  >
-                    <Download className="w-4 h-4" />
-                    Descargar PNG
-                  </button>
-                  <p className="text-xs text-slate-500 text-center mt-4 px-4">
-                    Este QR apuntará siempre al link dinámico. Puedes cambiar la URL de destino en el panel sin volver a imprimir el QR.
-                  </p>
-                </div>
-              ) : (
+            {selectedQr ? (
+              <QrStudio 
+                url={`${baseUrl}/r/${selectedQr.slug}`} 
+                qrName={selectedQr.slug} 
+              />
+            ) : (
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sticky top-24">
                 <div className="py-20 flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-white/10 rounded-2xl">
                   <QrCode className="w-12 h-12 mb-4 opacity-50" />
                   <p className="text-sm text-center px-6">Selecciona un link de la tabla para generar su código QR listo para imprimir.</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
         </div>
