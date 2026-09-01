@@ -72,19 +72,31 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
     if (!qrCodeStyling || !qrRef.current) return;
     qrRef.current.innerHTML = '';
     qrCodeStyling.append(qrRef.current);
-    
-    // Inject viewBox so the SVG scales perfectly without cropping on mobile
-    setTimeout(() => {
-      if (qrRef.current) {
-        const svg = qrRef.current.querySelector('svg');
-        if (svg) {
-          svg.setAttribute('viewBox', '0 0 250 250');
-          svg.style.width = '100%';
-          svg.style.height = '100%';
-        }
-      }
-    }, 100);
   }, [qrCodeStyling, activeTab]);
+
+  // Robust SVG fix to prevent cropping on mobile and in html-to-image
+  useEffect(() => {
+    if (!qrRef.current) return;
+    const fixSvg = () => {
+      const svg = qrRef.current?.querySelector('svg');
+      if (svg && svg.getAttribute('width') !== '100%') {
+        svg.setAttribute('viewBox', '0 0 250 250');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.style.width = '100%';
+        svg.style.height = '100%';
+      }
+    };
+    
+    // Fix immediately in case it's already there
+    fixSvg();
+    
+    // Watch for any changes (like when settings are updated)
+    const observer = new MutationObserver(fixSvg);
+    observer.observe(qrRef.current, { childList: true, subtree: true, attributes: true });
+    
+    return () => observer.disconnect();
+  }, [activeTab]);
 
   // Download logic
   const downloadPng = async () => {
@@ -234,8 +246,9 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
                 Instagram
               </h2>
               
-              <div className="bg-white p-2 sm:p-2.5 rounded-2xl shadow-xl mb-6 sm:mb-8 relative z-10 flex flex-col items-center w-full max-w-[200px] sm:max-w-[220px]">
-                <div ref={qrRef} className="w-full aspect-square rounded-xl overflow-hidden [&>svg]:w-full [&>svg]:h-full" />
+              {/* THE QR CONTAINER */}
+              <div className="bg-white p-2 sm:p-2.5 rounded-2xl shadow-xl mb-6 sm:mb-8 relative z-10 flex flex-col items-center w-max shrink-0">
+                <div ref={qrRef} className="w-[220px] h-[220px] sm:w-[250px] sm:h-[250px] shrink-0 rounded-xl overflow-hidden [&>svg]:w-full [&>svg]:h-full" />
               </div>
 
               <p className="text-white text-xl sm:text-2xl font-bold tracking-[0.2em] mb-2 sm:mb-4 drop-shadow-md">
@@ -245,7 +258,7 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
           ) : (
             // Standalone QR
             <div ref={cardRef} className={`bg-white flex flex-col items-center justify-center shrink-0 mt-4 sm:mt-0 ${qrText ? 'p-3 sm:p-4 pb-2 sm:pb-3 rounded-lg' : 'p-1.5 sm:p-2 rounded-sm'}`}>
-              <div ref={qrRef} className="w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] [&>svg]:w-full [&>svg]:h-full" />
+              <div ref={qrRef} className="w-[250px] h-[250px] shrink-0 [&>svg]:w-full [&>svg]:h-full flex items-center justify-center" />
               {qrText && (
                 <p 
                   className="mt-1 text-black font-bold text-xl sm:text-[28px] tracking-wide uppercase text-center" 
