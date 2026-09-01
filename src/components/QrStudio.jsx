@@ -26,7 +26,7 @@ export default function QrStudio({ url, qrName }) {
         height: 250,
         type: 'svg',
         data: url,
-        margin: 10,
+        margin: 0,
         qrOptions: {
           typeNumber: 0,
           mode: 'Byte',
@@ -170,7 +170,7 @@ export default function QrStudio({ url, qrName }) {
                 Instagram
               </h2>
               
-              <div className="bg-white p-3 rounded-2xl shadow-xl mb-8 relative z-10" style={{ padding: '12px' }}>
+              <div className="bg-white p-2.5 rounded-2xl shadow-xl mb-8 relative z-10 flex flex-col items-center">
                 <div ref={qrRef} className="w-[220px] h-[220px] rounded-xl overflow-hidden [&>svg]:w-full [&>svg]:h-full" />
               </div>
 
@@ -180,12 +180,12 @@ export default function QrStudio({ url, qrName }) {
             </div>
           ) : (
             // Standalone QR
-            <div ref={cardRef} className="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center justify-center">
+            <div ref={cardRef} className="bg-white p-6 pb-4 rounded-3xl shadow-2xl flex flex-col items-center justify-center">
               <div ref={qrRef} className="w-[250px] h-[250px] [&>svg]:w-full [&>svg]:h-full" />
               {qrText && (
                 <p 
-                  className="mt-4 text-black font-bold text-3xl tracking-wide uppercase text-center" 
-                  style={{ fontFamily: 'sans-serif' }}
+                  className="mt-1 text-black font-bold text-[28px] tracking-wide uppercase text-center" 
+                  style={{ fontFamily: 'sans-serif', lineHeight: '1' }}
                 >
                   {qrText}
                 </p>
