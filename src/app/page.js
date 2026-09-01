@@ -15,6 +15,8 @@ export default function Dashboard() {
 
   // Form states
   const [newClientName, setNewClientName] = useState('');
+  const [clientUsername, setClientUsername] = useState('');
+  const [clientPassword, setClientPassword] = useState('');
   const [selectedClientId, setSelectedClientId] = useState('');
   const [qrName, setQrName] = useState('');
   const [qrSlug, setQrSlug] = useState('');
@@ -63,9 +65,22 @@ export default function Dashboard() {
 
   const handleCreateClient = async (e) => {
     e.preventDefault();
-    if (!newClientName) return;
-    await supabase.from('clients').insert([{ name: newClientName }]);
+    if (!newClientName || !clientUsername || !clientPassword) return;
+    
+    const { error } = await supabase.from('clients').insert([{ 
+      name: newClientName,
+      username: clientUsername.toLowerCase(),
+      password: clientPassword
+    }]);
+
+    if (error) {
+      alert("Error al crear cliente: " + error.message);
+      return;
+    }
+
     setNewClientName('');
+    setClientUsername('');
+    setClientPassword('');
     loadData();
   };
 
@@ -276,8 +291,22 @@ export default function Dashboard() {
                         required 
                         value={newClientName} 
                         onChange={e => setNewClientName(e.target.value)} 
+                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500/50 outline-none mb-3"
+                        placeholder="Nombre del Cliente (Ej. Zara)"
+                      />
+                      <input 
+                        required 
+                        value={clientUsername} 
+                        onChange={e => setClientUsername(e.target.value)} 
+                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500/50 outline-none mb-3 lowercase"
+                        placeholder="Usuario de acceso (Ej. zara_admin)"
+                      />
+                      <input 
+                        required 
+                        value={clientPassword} 
+                        onChange={e => setClientPassword(e.target.value)} 
                         className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500/50 outline-none"
-                        placeholder="Nombre del Cliente"
+                        placeholder="Contraseña (Ej. 1234)"
                       />
                     </div>
                     <button type="submit" className="w-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-2.5 rounded-xl transition-all">Registrar Cliente</button>
@@ -288,8 +317,11 @@ export default function Dashboard() {
                     <ul className="space-y-2 max-h-40 overflow-y-auto pr-2">
                       {clients.map(c => (
                         <li key={c.id} className="flex justify-between items-center text-sm bg-black/20 px-3 py-2 rounded-lg">
-                          <span className="text-slate-300 truncate">{c.name}</span>
-                          <button onClick={() => handleDeleteClient(c.id)} className="text-red-400 hover:text-red-300 p-1" title="Eliminar Cliente">
+                          <div className="flex flex-col truncate">
+                            <span className="text-slate-300 font-medium truncate">{c.name}</span>
+                            {c.username && <span className="text-slate-500 text-xs truncate">User: {c.username}</span>}
+                          </div>
+                          <button onClick={() => handleDeleteClient(c.id)} className="text-red-400 hover:text-red-300 p-2 shrink-0" title="Eliminar Cliente">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </li>
