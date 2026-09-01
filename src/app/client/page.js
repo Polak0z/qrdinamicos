@@ -16,9 +16,6 @@ export default function ClientPortal() {
 
   // Filters
   const [selectedQr, setSelectedQr] = useState('all');
-  const [timeFilter, setTimeFilter] = useState('all'); // all, today, week, month, year, custom
-  const [customStart, setCustomStart] = useState('');
-  const [customEnd, setCustomEnd] = useState('');
 
   // Check existing session
   useEffect(() => {
@@ -104,56 +101,21 @@ export default function ClientPortal() {
       filtered = filtered.filter(s => s.qr_id === selectedQr);
     }
 
-    // 2. Time Filter
-    const now = new Date();
-    if (timeFilter !== 'all') {
-      filtered = filtered.filter(s => {
-        const scanDate = new Date(s.scanned_at);
-        if (timeFilter === 'today') {
-          return scanDate.toDateString() === now.toDateString();
-        }
-        if (timeFilter === 'week') {
-          const oneWeekAgo = new Date();
-          oneWeekAgo.setDate(now.getDate() - 7);
-          return scanDate >= oneWeekAgo;
-        }
-        if (timeFilter === 'month') {
-          return scanDate.getMonth() === now.getMonth() && scanDate.getFullYear() === now.getFullYear();
-        }
-        if (timeFilter === 'year') {
-          return scanDate.getFullYear() === now.getFullYear();
-        }
-        if (timeFilter === 'custom' && customStart && customEnd) {
-          const start = new Date(customStart);
-          start.setHours(0,0,0,0);
-          const end = new Date(customEnd);
-          end.setHours(23,59,59,999);
-          return scanDate >= start && scanDate <= end;
-        }
-        return true;
-      });
-    }
-
-    // Prepare Daily Chart (Last 14 days or based on range)
+    // 2. Prepare Daily Chart (Last 14 days)
     const dateCounts = {};
     filtered.forEach(scan => {
       const date = new Date(scan.scanned_at).toLocaleDateString();
       dateCounts[date] = (dateCounts[date] || 0) + 1;
     });
     
-    // Sort dates
+    // Sort dates and get last 14
     let daily = Object.keys(dateCounts).map(date => ({
       date,
       scans: dateCounts[date],
       timestamp: new Date(date).getTime()
-    })).sort((a,b) => a.timestamp - b.timestamp);
+    })).sort((a,b) => a.timestamp - b.timestamp).slice(-14);
 
-    // If 'all' or 'week', maybe limit to recent for readability if too large, but sorting is enough.
-    if (timeFilter === 'all' && daily.length > 30) {
-      daily = daily.slice(-30); // Show last 30 active days
-    }
-
-    // Prepare Hourly Chart
+    // 3. Prepare Hourly Chart (From the filtered scans)
     const hourCounts = Array(24).fill(0);
     filtered.forEach(scan => {
       const hour = new Date(scan.scanned_at).getHours();
@@ -165,8 +127,7 @@ export default function ClientPortal() {
     }));
 
     return { filteredScans: filtered, dailyChartData: daily, hourlyChartData: hourly };
-  }, [scans, selectedQr, timeFilter, customStart, customEnd]);
-
+  }, [scans, selectedQr]);
 
   if (!clientAuth) {
     return (
@@ -245,68 +206,21 @@ export default function ClientPortal() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
         
         {/* Filters Panel */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-4">
-            <h2 className="text-white font-semibold flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-purple-400" /> 
-              Filtros de Análisis
-            </h2>
-          </div>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h2 className="text-white font-semibold flex items-center gap-2">
+            <Activity className="w-5 h-5 text-purple-400" /> 
+            Visión General
+          </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* QR Filter */}
-            <div>
-              <label className="text-xs text-slate-400 mb-1.5 block">Código QR Específico</label>
-              <select 
-                value={selectedQr} 
-                onChange={(e) => setSelectedQr(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
-              >
-                <option value="all">Resumen General (Todos)</option>
-                {qrs.map(q => <option key={q.id} value={q.id}>{q.name}</option>)}
-              </select>
-            </div>
-
-            {/* Time Filter */}
-            <div>
-              <label className="text-xs text-slate-400 mb-1.5 block">Rango de Tiempo</label>
-              <select 
-                value={timeFilter} 
-                onChange={(e) => setTimeFilter(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
-              >
-                <option value="all">Historico Completo</option>
-                <option value="today">Solo Hoy</option>
-                <option value="week">Últimos 7 días</option>
-                <option value="month">Este Mes</option>
-                <option value="year">Este Año</option>
-                <option value="custom">Rango Personalizado...</option>
-              </select>
-            </div>
-
-            {/* Custom Range Inputs */}
-            {timeFilter === 'custom' && (
-              <>
-                <div>
-                  <label className="text-xs text-slate-400 mb-1.5 block">Desde</label>
-                  <input 
-                    type="date"
-                    value={customStart}
-                    onChange={(e) => setCustomStart(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-400 mb-1.5 block">Hasta</label>
-                  <input 
-                    type="date"
-                    value={customEnd}
-                    onChange={(e) => setCustomEnd(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
-                  />
-                </div>
-              </>
-            )}
+          <div className="w-full sm:w-64">
+            <select 
+              value={selectedQr} 
+              onChange={(e) => setSelectedQr(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-purple-500 outline-none"
+            >
+              <option value="all">Todos mis QRs</option>
+              {qrs.map(q => <option key={q.id} value={q.id}>{q.name}</option>)}
+            </select>
           </div>
         </div>
 
@@ -316,7 +230,7 @@ export default function ClientPortal() {
             <TrendingUp className="w-32 h-32" />
           </div>
           <div className="relative z-10">
-            <p className="text-purple-300 text-sm font-medium mb-2 uppercase tracking-widest">Total Escaneos (Rango Seleccionado)</p>
+            <p className="text-purple-300 text-sm font-medium mb-2 uppercase tracking-widest">Total de Escaneos Históricos</p>
             <h2 className="text-6xl sm:text-7xl font-black text-white drop-shadow-lg">{filteredScans.length}</h2>
           </div>
         </div>
@@ -325,7 +239,7 @@ export default function ClientPortal() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Daily Chart */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">Tráfico por Fechas</h3>
+            <h3 className="text-lg font-semibold text-white mb-6">Tráfico por Fechas (Últimos 14 días)</h3>
             <div className="h-72 w-full">
               {dailyChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -338,14 +252,14 @@ export default function ClientPortal() {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">Sin datos para mostrar en este rango</div>
+                <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">Sin datos registrados</div>
               )}
             </div>
           </div>
 
           {/* Hourly Chart */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">Tráfico por Horas del Día</h3>
+            <h3 className="text-lg font-semibold text-white mb-6">Concentración por Hora (00:00 - 23:59)</h3>
             <div className="h-72 w-full">
               {hourlyChartData.some(d => d.scans > 0) ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -358,7 +272,7 @@ export default function ClientPortal() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">Sin datos para mostrar en este rango</div>
+                <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm">Sin datos registrados</div>
               )}
             </div>
           </div>
