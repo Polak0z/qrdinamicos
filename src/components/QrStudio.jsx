@@ -173,22 +173,22 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Preview Area */}
-        <div className="lg:col-span-7 flex items-center justify-center p-8 bg-slate-900/50 rounded-xl border border-slate-800 relative overflow-hidden min-h-[500px]">
+        <div className="lg:col-span-7 flex items-start sm:items-center justify-center p-4 sm:p-8 bg-slate-900/50 rounded-xl border border-slate-800 relative overflow-hidden min-h-[450px] sm:min-h-[500px] overflow-x-auto">
           
           {/* Navigation Arrows */}
           {onPrev && (
-            <button onClick={onPrev} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-white/20 text-white rounded-full transition-all z-20" title="QR Anterior">
-              <ChevronLeft className="w-6 h-6" />
+            <button onClick={onPrev} className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-1.5 sm:p-2 bg-black/50 hover:bg-white/20 text-white rounded-full transition-all z-20" title="QR Anterior">
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
           {onNext && (
-            <button onClick={onNext} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-white/20 text-white rounded-full transition-all z-20" title="Siguiente QR">
-              <ChevronRight className="w-6 h-6" />
+            <button onClick={onNext} className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-1.5 sm:p-2 bg-black/50 hover:bg-white/20 text-white rounded-full transition-all z-20" title="Siguiente QR">
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
 
           {/* Position indicator */}
-          <div className="absolute top-4 right-4 bg-black/40 text-slate-300 text-xs px-3 py-1.5 rounded-full z-20 border border-white/10 font-medium">
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/40 text-slate-300 text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-full z-20 border border-white/10 font-medium">
             {currentIndex + 1} / {total}
           </div>
 
@@ -196,36 +196,36 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
             // Instagram Card Template
             <div 
               ref={cardRef}
-              className="relative rounded-[2rem] shadow-2xl flex flex-col items-center p-8 w-[320px] bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] overflow-hidden"
+              className="relative rounded-[2rem] shadow-2xl flex flex-col items-center p-6 sm:p-8 w-[280px] sm:w-[320px] bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045] overflow-hidden mt-4 sm:mt-0 mx-auto shrink-0"
               style={{
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(253, 29, 29, 0.3)'
               }}
             >
-              <div className="mb-6 mt-4">
-                <img src="/instagram-logo.svg" alt="Instagram" className="w-20 h-20 text-white" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))' }} />
+              <div className="mb-4 sm:mb-6 mt-2 sm:mt-4">
+                <img src="/instagram-logo.svg" alt="Instagram" className="w-16 h-16 sm:w-20 sm:h-20 text-white" style={{ filter: 'drop-shadow(0px 4px 6px rgba(0,0,0,0.1))' }} />
               </div>
               <h2 
-                className="text-white text-4xl font-bold mb-8 tracking-wide drop-shadow-md"
+                className="text-white text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 tracking-wide drop-shadow-md"
                 style={{ fontFamily: 'var(--font-geist-sans)' }} // En un proyecto real usaríamos una fuente tipo billabong
               >
                 Instagram
               </h2>
               
-              <div className="bg-white p-2.5 rounded-2xl shadow-xl mb-8 relative z-10 flex flex-col items-center">
-                <div ref={qrRef} className="w-[220px] h-[220px] rounded-xl overflow-hidden [&>svg]:w-full [&>svg]:h-full" />
+              <div className="bg-white p-2 sm:p-2.5 rounded-2xl shadow-xl mb-6 sm:mb-8 relative z-10 flex flex-col items-center w-full max-w-[200px] sm:max-w-[220px]">
+                <div ref={qrRef} className="w-full aspect-square rounded-xl overflow-hidden [&>svg]:w-full [&>svg]:h-full" />
               </div>
 
-              <p className="text-white text-2xl font-bold tracking-[0.2em] mb-4 drop-shadow-md">
+              <p className="text-white text-xl sm:text-2xl font-bold tracking-[0.2em] mb-2 sm:mb-4 drop-shadow-md">
                 FOLLOW US
               </p>
             </div>
           ) : (
             // Standalone QR
-            <div ref={cardRef} className={`bg-white flex flex-col items-center justify-center ${qrText ? 'p-4 pb-3 rounded-lg' : 'p-2 rounded-sm'}`}>
-              <div ref={qrRef} className="w-[250px] h-[250px] [&>svg]:w-full [&>svg]:h-full" />
+            <div ref={cardRef} className={`bg-white flex flex-col items-center justify-center shrink-0 mt-4 sm:mt-0 ${qrText ? 'p-3 sm:p-4 pb-2 sm:pb-3 rounded-lg' : 'p-1.5 sm:p-2 rounded-sm'}`}>
+              <div ref={qrRef} className="w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] [&>svg]:w-full [&>svg]:h-full" />
               {qrText && (
                 <p 
-                  className="mt-1 text-black font-bold text-[28px] tracking-wide uppercase text-center" 
+                  className="mt-1 text-black font-bold text-xl sm:text-[28px] tracking-wide uppercase text-center" 
                   style={{ fontFamily: 'sans-serif', lineHeight: '1' }}
                 >
                   {qrText}

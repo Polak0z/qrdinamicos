@@ -174,8 +174,8 @@ export default function Dashboard() {
       
       {/* Navbar */}
       <nav className="border-b border-white/10 bg-white/5 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:h-16 sm:py-0 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-start">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
               <QrCode className="w-5 h-5 text-white" />
             </div>
@@ -185,7 +185,7 @@ export default function Dashboard() {
           </div>
           
           {/* Main Navigation Tabs */}
-          <div className="flex bg-white/5 rounded-lg p-1 border border-white/10">
+          <div className="flex bg-white/5 rounded-lg p-1 border border-white/10 w-full sm:w-auto overflow-x-auto snap-x">
             <button 
               onClick={() => setActiveTab('gestion')}
               className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
@@ -228,7 +228,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         
         {/* ======================= TAB: GESTION ======================= */}
         {activeTab === 'gestion' && (
@@ -325,12 +325,12 @@ export default function Dashboard() {
               {/* Table */}
               <div className="lg:col-span-2">
                 <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex flex-col h-full">
-                  <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black/10">
+                  <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-black/10">
                     <h3 className="text-base font-semibold text-white">Links Activos</h3>
                     <select 
                       value={gestionFilterClient} 
                       onChange={(e) => setGestionFilterClient(e.target.value)}
-                      className="bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-500 outline-none w-full sm:w-auto"
                     >
                       <option value="all">Filtrar: Todos los clientes</option>
                       {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
