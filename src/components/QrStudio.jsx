@@ -16,6 +16,7 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
   const [qrColor, setQrColor] = useState('#000000');
   const [cornerType, setCornerType] = useState('extra-rounded'); // square, dot, extra-rounded
   const [qrText, setQrText] = useState('');
+  const [exportQuality, setExportQuality] = useState('3'); // '3' (Alta), '1' (Normal), 'small' (~200px)
 
   // Initialize QR styling instance
   useEffect(() => {
@@ -66,18 +67,36 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
     });
   }, [qrCodeStyling, url, qrColor, dotType, cornerType]);
 
-  // Render QR inside the ref container
+  // Render QR inside the ref container and fix SVG viewBox
   useEffect(() => {
     if (!qrCodeStyling || !qrRef.current) return;
     qrRef.current.innerHTML = '';
     qrCodeStyling.append(qrRef.current);
+    
+    // Inject viewBox so the SVG scales perfectly without cropping on mobile
+    setTimeout(() => {
+      if (qrRef.current) {
+        const svg = qrRef.current.querySelector('svg');
+        if (svg) {
+          svg.setAttribute('viewBox', '0 0 250 250');
+          svg.style.width = '100%';
+          svg.style.height = '100%';
+        }
+      }
+    }, 100);
   }, [qrCodeStyling, activeTab]);
 
   // Download logic
   const downloadPng = async () => {
     const { toPng } = await import('html-to-image');
     if (cardRef.current) {
-      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 3 });
+      let pr = 3;
+      if (exportQuality === '1') pr = 1;
+      else if (exportQuality === 'small') {
+        pr = 200 / cardRef.current.offsetWidth;
+      }
+
+      const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: pr });
       const link = document.createElement('a');
       link.download = activeTab === 'template' ? `${qrSlug}-instagram-card.png` : `${qrSlug}-qr.png`;
       link.href = dataUrl;
@@ -90,7 +109,11 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
     const { toPng } = await import('html-to-image');
     const { jsPDF } = await import('jspdf');
 
-    const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 3 });
+    let pr = 3;
+    if (exportQuality === '1') pr = 1;
+    else if (exportQuality === 'small') pr = 0.5;
+
+    const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: pr });
     
     // Letter: 8.5 x 11 in (215.9 x 279.4 mm)
     // Half Letter: 5.5 x 8.5 in (139.7 x 215.9 mm)
@@ -302,6 +325,19 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
           <div className="space-y-3">
             <h3 className="text-white font-medium">Exportar</h3>
             
+            <div className="mb-4">
+              <label className="text-sm text-slate-400 mb-2 block">Tamaño de exportación</label>
+              <select 
+                value={exportQuality} 
+                onChange={(e) => setExportQuality(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 text-sm text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none"
+              >
+                <option value="3">Alta Calidad / Impresión (Grande)</option>
+                <option value="1">Calidad Web (Mediano)</option>
+                <option value="small">Tamaño Pequeño (~200px)</option>
+              </select>
+            </div>
+
             <button 
               onClick={downloadPng}
               className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-3 rounded-xl transition-all font-medium border border-white/10"
