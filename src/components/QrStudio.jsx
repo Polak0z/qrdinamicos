@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { Download, Palette, LayoutTemplate, Printer } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Download, Palette, LayoutTemplate, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function QrStudio({ url, qrName }) {
+export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onNext, onPrev }) {
   const qrRef = useRef(null);
   const cardRef = useRef(null);
   const [qrCodeStyling, setQrCodeStyling] = useState(null);
@@ -50,7 +50,7 @@ export default function QrStudio({ url, qrName }) {
       });
       setQrCodeStyling(instance);
     }).catch(err => console.error("Error loading QR library", err));
-  }, []);
+  }, [url]);
 
   // Update QR options when state changes
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function QrStudio({ url, qrName }) {
     if (cardRef.current) {
       const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 3 });
       const link = document.createElement('a');
-      link.download = activeTab === 'template' ? `${qrName}-instagram-card.png` : `${qrName}-qr.png`;
+      link.download = activeTab === 'template' ? `${qrSlug}-instagram-card.png` : `${qrSlug}-qr.png`;
       link.href = dataUrl;
       link.click();
     }
@@ -112,7 +112,7 @@ export default function QrStudio({ url, qrName }) {
 
     // Fill the entire PDF page
     pdf.addImage(dataUrl, 'PNG', 0, 0, format[0], format[1]);
-    pdf.save(`${qrName}-${sizeMode}-print.pdf`);
+    pdf.save(`${qrSlug}-${sizeMode}-print.pdf`);
   };
 
   return (
@@ -121,8 +121,11 @@ export default function QrStudio({ url, qrName }) {
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-white">QR Studio</h2>
-          <p className="text-slate-400 text-sm">Personaliza y exporta tu QR.</p>
+          <div className="flex items-center gap-3">
+             <h2 className="text-xl font-bold text-white">Estudio QR: {qrName}</h2>
+             <span className="text-xs font-mono bg-purple-500/20 text-purple-300 px-2 py-1 rounded">/r/{qrSlug}</span>
+          </div>
+          <p className="text-slate-400 text-sm mt-1">Personaliza y exporta tu QR.</p>
         </div>
         
         <div className="flex bg-white/5 rounded-lg p-1 border border-white/10">
@@ -150,7 +153,25 @@ export default function QrStudio({ url, qrName }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Preview Area */}
-        <div className="lg:col-span-7 flex flex-col items-center justify-center p-8 bg-slate-900/50 rounded-xl border border-slate-800 relative overflow-hidden min-h-[500px]">
+        <div className="lg:col-span-7 flex items-center justify-center p-8 bg-slate-900/50 rounded-xl border border-slate-800 relative overflow-hidden min-h-[500px]">
+          
+          {/* Navigation Arrows */}
+          {onPrev && (
+            <button onClick={onPrev} className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-white/20 text-white rounded-full transition-all z-20" title="QR Anterior">
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+          {onNext && (
+            <button onClick={onNext} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-white/20 text-white rounded-full transition-all z-20" title="Siguiente QR">
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          )}
+
+          {/* Position indicator */}
+          <div className="absolute top-4 right-4 bg-black/40 text-slate-300 text-xs px-3 py-1.5 rounded-full z-20 border border-white/10 font-medium">
+            {currentIndex + 1} / {total}
+          </div>
+
           {activeTab === 'template' ? (
             // Instagram Card Template
             <div 
@@ -180,7 +201,7 @@ export default function QrStudio({ url, qrName }) {
             </div>
           ) : (
             // Standalone QR
-            <div ref={cardRef} className="bg-white p-6 pb-4 rounded-3xl shadow-2xl flex flex-col items-center justify-center">
+            <div ref={cardRef} className="bg-white p-4 flex flex-col items-center justify-center">
               <div ref={qrRef} className="w-[250px] h-[250px] [&>svg]:w-full [&>svg]:h-full" />
               {qrText && (
                 <p 

@@ -483,15 +483,10 @@ export default function Dashboard() {
         )}
 
         {/* ======================= TAB: QR STUDIO ======================= */}
-        {activeTab === 'studio' && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {selectedQr ? (
-              <QrStudio 
-                url={`${baseUrl}/r/${selectedQr.slug}`} 
-                qrName={selectedQr.slug} 
-              />
-            ) : (
-              <div className="py-32 flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
+        {activeTab === 'studio' && (() => {
+          if (!selectedQr) {
+            return (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 py-32 flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
                 <QrCode className="w-16 h-16 mb-4 opacity-50" />
                 <p className="text-lg text-center px-6 text-white mb-2">No has seleccionado un QR</p>
                 <p className="text-sm text-center px-6 max-w-md">Ve a la pestaña de <b>Gestión</b> y haz clic en el icono de código QR de cualquier link de la tabla para abrir el Estudio de Diseño.</p>
@@ -502,9 +497,26 @@ export default function Dashboard() {
                   Ir a Gestión
                 </button>
               </div>
-            )}
-          </div>
-        )}
+            );
+          }
+
+          const qrsOfClient = qrs.filter(q => q.client_id === selectedQr.client_id);
+          const currentIndex = qrsOfClient.findIndex(q => q.id === selectedQr.id);
+          
+          return (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <QrStudio 
+                url={`${baseUrl}/r/${selectedQr.slug}`} 
+                qrName={selectedQr.name}
+                qrSlug={selectedQr.slug}
+                currentIndex={currentIndex}
+                total={qrsOfClient.length}
+                onNext={currentIndex < qrsOfClient.length - 1 ? () => setSelectedQr(qrsOfClient[currentIndex + 1]) : null}
+                onPrev={currentIndex > 0 ? () => setSelectedQr(qrsOfClient[currentIndex - 1]) : null}
+              />
+            </div>
+          );
+        })()}
 
       </main>
     </div>
