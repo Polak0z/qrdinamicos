@@ -1,0 +1,35 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model QrLink {
+  id           String      @id @default(uuid())
+  slug         String      @unique
+  urlDestino   String
+  nombreCliente String
+  mesa         String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  // Relaciones
+  scans        ScanEvent[]
+}
+
+model ScanEvent {
+  id         String   @id @default(uuid())
+  qrLinkId   String
+  timestamp  DateTime @default(now())
+  userAgent  String?
+  referer    String?
+  os         String?
+  browser    String?
+  
+  qrLink     QrLink   @relation(fields: [qrLinkId], references: [id], onDelete: Cascade)
+}
