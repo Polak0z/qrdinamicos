@@ -110,8 +110,28 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
       format: format
     });
 
-    // Fill the entire PDF page
-    pdf.addImage(dataUrl, 'PNG', 0, 0, format[0], format[1]);
+    // Calculate aspect ratio to avoid stretching
+    const canvasWidth = cardRef.current.offsetWidth;
+    const canvasHeight = cardRef.current.offsetHeight;
+    const ratio = canvasWidth / canvasHeight;
+
+    // Use 85% of the page width to give it a nice print margin
+    const maxWidth = format[0] * 0.85; 
+    const maxHeight = format[1] * 0.90;
+    
+    let imgWidth = maxWidth;
+    let imgHeight = imgWidth / ratio;
+    
+    if (imgHeight > maxHeight) {
+      imgHeight = maxHeight;
+      imgWidth = imgHeight * ratio;
+    }
+    
+    // Center the image on the PDF page
+    const x = (format[0] - imgWidth) / 2;
+    const y = (format[1] - imgHeight) / 2;
+
+    pdf.addImage(dataUrl, 'PNG', x, y, imgWidth, imgHeight);
     pdf.save(`${qrSlug}-${sizeMode}-print.pdf`);
   };
 
@@ -201,7 +221,7 @@ export default function QrStudio({ url, qrName, qrSlug, currentIndex, total, onN
             </div>
           ) : (
             // Standalone QR
-            <div ref={cardRef} className="bg-white p-4 flex flex-col items-center justify-center">
+            <div ref={cardRef} className={`bg-white flex flex-col items-center justify-center ${qrText ? 'p-4 pb-3 rounded-lg' : 'p-2 rounded-sm'}`}>
               <div ref={qrRef} className="w-[250px] h-[250px] [&>svg]:w-full [&>svg]:h-full" />
               {qrText && (
                 <p 
