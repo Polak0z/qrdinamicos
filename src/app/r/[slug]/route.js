@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
 export async function GET(request, { params }) {
-  // En Next.js 15, `params` puede necesitar un await. Para mantener compatibilidad con 13/14, lo leemos directamente.
-  const { slug } = params;
+  // En Next.js 15+, `params` es una Promesa. Hay que hacerle await.
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
 
   if (!slug) {
     return NextResponse.json({ error: 'Slug is required' }, { status: 400 });

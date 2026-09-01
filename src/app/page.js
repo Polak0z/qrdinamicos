@@ -26,6 +26,11 @@ export default function Dashboard() {
 
   const loadData = async () => {
     setLoading(true);
+    if (!supabase) {
+      console.error("Supabase client is not initialized. Please check your .env variables.");
+      setLoading(false);
+      return;
+    }
     // 1. Load Clients
     const { data: clientsData } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
     setClients(clientsData || []);
@@ -150,6 +155,19 @@ export default function Dashboard() {
           </div>
         </div>
       </nav>
+
+      {!supabase && (
+        <div className="max-w-7xl mx-auto px-6 mt-8">
+          <div className="bg-red-500/10 border border-red-500/30 p-6 rounded-2xl text-center">
+            <h2 className="text-red-400 text-xl font-bold mb-2">Error Crítico: Supabase no está configurado</h2>
+            <p className="text-red-300">
+              Las variables de entorno en tu archivo <b>.env</b> son incorrectas. <br/>
+              <b>NEXT_PUBLIC_SUPABASE_URL</b> debe ser un enlace válido que empiece con <i>https://...</i><br/>
+              Asegúrate de copiar el "Project URL" desde los ajustes de la API en Supabase.
+            </p>
+          </div>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         
