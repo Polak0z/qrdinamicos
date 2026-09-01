@@ -15,6 +15,7 @@ export default function QrStudio({ url, qrName }) {
   const [dotType, setDotType] = useState('rounded'); // square, dots, rounded, extra-rounded
   const [qrColor, setQrColor] = useState('#000000');
   const [cornerType, setCornerType] = useState('extra-rounded'); // square, dot, extra-rounded
+  const [qrText, setQrText] = useState('');
 
   // Initialize QR styling instance
   useEffect(() => {
@@ -75,14 +76,12 @@ export default function QrStudio({ url, qrName }) {
   // Download logic
   const downloadPng = async () => {
     const { toPng } = await import('html-to-image');
-    if (activeTab === 'template' && cardRef.current) {
+    if (cardRef.current) {
       const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 3 });
       const link = document.createElement('a');
-      link.download = `${qrName}-instagram-card.png`;
+      link.download = activeTab === 'template' ? `${qrName}-instagram-card.png` : `${qrName}-qr.png`;
       link.href = dataUrl;
       link.click();
-    } else if (activeTab === 'standalone' && qrCodeStyling) {
-      qrCodeStyling.download({ name: `${qrName}-qr`, extension: 'png' });
     }
   };
 
@@ -181,8 +180,16 @@ export default function QrStudio({ url, qrName }) {
             </div>
           ) : (
             // Standalone QR
-            <div className="bg-white p-6 rounded-3xl shadow-2xl">
+            <div ref={cardRef} className="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center justify-center">
               <div ref={qrRef} className="w-[250px] h-[250px] [&>svg]:w-full [&>svg]:h-full" />
+              {qrText && (
+                <p 
+                  className="mt-4 text-black font-bold text-3xl tracking-wide uppercase text-center" 
+                  style={{ fontFamily: 'sans-serif' }}
+                >
+                  {qrText}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -233,6 +240,18 @@ export default function QrStudio({ url, qrName }) {
                 <option value="dot">Puntos</option>
                 <option value="square">Cuadradas</option>
               </select>
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-400 mb-2 block">Texto bajo el QR (Opcional)</label>
+              <input 
+                type="text"
+                value={qrText} 
+                onChange={(e) => setQrText(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none uppercase"
+                placeholder="Ej: ESCANEAME"
+                maxLength={25}
+              />
             </div>
           </div>
 
