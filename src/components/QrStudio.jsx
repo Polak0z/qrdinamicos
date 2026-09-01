@@ -93,35 +93,26 @@ export default function QrStudio({ url, qrName }) {
 
     const dataUrl = await toPng(cardRef.current, { cacheBust: true, pixelRatio: 3 });
     
-    // PDF Letter size: 215.9 x 279.4 mm (8.5 x 11 inches)
+    // Letter: 8.5 x 11 in (215.9 x 279.4 mm)
+    // Half Letter: 5.5 x 8.5 in (139.7 x 215.9 mm)
+    // Quarter Letter: 4.25 x 5.5 in (107.95 x 139.7 mm)
+    let format = [];
+    if (sizeMode === 'full') {
+      format = [215.9, 279.4];
+    } else if (sizeMode === 'half') {
+      format = [139.7, 215.9];
+    } else if (sizeMode === 'quarter') {
+      format = [107.95, 139.7];
+    }
+
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: 'letter'
+      format: format
     });
 
-    const pageWidth = 215.9;
-    const pageHeight = 279.4;
-    
-    // Define card dimensions based on mode
-    let targetWidth, targetHeight;
-
-    if (sizeMode === 'full') {
-      targetWidth = 140; // Approx 5.5 inches wide
-      targetHeight = 200;
-    } else if (sizeMode === 'half') {
-      targetWidth = 100;
-      targetHeight = 142;
-    } else if (sizeMode === 'quarter') {
-      targetWidth = 70;
-      targetHeight = 100;
-    }
-
-    // Center it on the page
-    const x = (pageWidth - targetWidth) / 2;
-    const y = (pageHeight - targetHeight) / 2;
-
-    pdf.addImage(dataUrl, 'PNG', x, y, targetWidth, targetHeight);
+    // Fill the entire PDF page
+    pdf.addImage(dataUrl, 'PNG', 0, 0, format[0], format[1]);
     pdf.save(`${qrName}-${sizeMode}-print.pdf`);
   };
 
