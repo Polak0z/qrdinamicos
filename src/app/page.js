@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { Link2, Trash2, Edit2, QrCode, TrendingUp, Users, Activity, Settings2, BarChart3, LayoutGrid } from 'lucide-react';
+import { Link2, Trash2, Edit2, QrCode, TrendingUp, Users, Activity, Settings2, BarChart3, LayoutGrid, Pencil } from 'lucide-react';
 import QrStudio from '@/components/QrStudio';
 
 export default function Dashboard() {
@@ -17,6 +17,12 @@ export default function Dashboard() {
   const [newClientName, setNewClientName] = useState('');
   const [clientUsername, setClientUsername] = useState('');
   const [clientPassword, setClientPassword] = useState('');
+  
+  // Edit states
+  const [editingClient, setEditingClient] = useState(null);
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  
   const [selectedClientId, setSelectedClientId] = useState('');
   const [qrName, setQrName] = useState('');
   const [qrSlug, setQrSlug] = useState('');
@@ -82,6 +88,26 @@ export default function Dashboard() {
     setClientUsername('');
     setClientPassword('');
     loadData();
+  };
+
+  const handleUpdateClient = async (e) => {
+    e.preventDefault();
+    if (!editingClient) return;
+
+    const { error } = await supabase
+      .from('clients')
+      .update({ 
+        username: editUsername.toLowerCase(),
+        password: editPassword 
+      })
+      .eq('id', editingClient.id);
+
+    if (error) {
+      alert("Error al actualizar: " + error.message);
+    } else {
+      setEditingClient(null);
+      loadData();
+    }
   };
 
   const handleDeleteClient = async (id) => {
@@ -321,9 +347,22 @@ export default function Dashboard() {
                             <span className="text-slate-300 font-medium truncate">{c.name}</span>
                             {c.username && <span className="text-slate-500 text-xs truncate">User: {c.username}</span>}
                           </div>
-                          <button onClick={() => handleDeleteClient(c.id)} className="text-red-400 hover:text-red-300 p-2 shrink-0" title="Eliminar Cliente">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center shrink-0">
+                            <button 
+                              onClick={() => {
+                                setEditingClient(c);
+                                setEditUsername(c.username || '');
+                                setEditPassword(c.password || '');
+                              }} 
+                              className="text-blue-400 hover:text-blue-300 p-2" 
+                              title="Editar Credenciales"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleDeleteClient(c.id)} className="text-red-400 hover:text-red-300 p-2" title="Eliminar Cliente">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -551,6 +590,50 @@ export default function Dashboard() {
         })()}
 
       </main>
+      {/* Edit Client Modal */}
+      {editingClient && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold text-white mb-4">Editar {editingClient.name}</h3>
+            <form onSubmit={handleUpdateClient} className="space-y-4">
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Usuario</label>
+                <input 
+                  required 
+                  value={editUsername} 
+                  onChange={e => setEditUsername(e.target.value)} 
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500/50 outline-none lowercase"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Contraseña</label>
+                <input 
+                  required 
+                  value={editPassword} 
+                  onChange={e => setEditPassword(e.target.value)} 
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-purple-500/50 outline-none"
+                />
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => setEditingClient(null)} 
+                  className="flex-1 bg-white/5 hover:bg-white/10 text-white text-sm font-medium py-2.5 rounded-xl transition-all"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white text-sm font-medium py-2.5 rounded-xl transition-all"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
